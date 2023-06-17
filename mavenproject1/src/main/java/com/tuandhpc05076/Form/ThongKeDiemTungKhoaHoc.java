@@ -1,0 +1,221 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
+package com.tuandhpc05076.Form;
+
+import static com.tuandhpc05076.Form.NhanVien.list;
+import com.tuandhpc05076.Object.O_BangDiem;
+import com.tuandhpc05076.Object.O_ChuyenDe;
+import com.tuandhpc05076.Object.O_DangNhap;
+import com.tuandhpc05076.Object.O_HocVien;
+import com.tuandhpc05076.Object.O_KhoaHoc;
+import com.tuandhpc05076.Object.O_NguoiHoc;
+import com.tuandhpc05076.Object.O_ThongKeDoanhThu;
+import com.tuandhpc05076.swing0.Form;
+import java.sql.CallableStatement;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ *
+ * @author DELL E5470
+ */
+public class ThongKeDiemTungKhoaHoc extends Form {
+
+    public static ArrayList<O_HocVien> listHV = new ArrayList<>();
+    private ArrayList<O_ChuyenDe> listCD = new ArrayList<>();
+    public static ArrayList<O_KhoaHoc> listKhoaHoc = new ArrayList<>();
+    ArrayList<O_BangDiem> listBangDiem = new ArrayList<>();
+    DefaultTableModel tblmodel;
+    String userName = "sa";
+    String password = "123";
+    String url = "jdbc:sqlserver://localhost:1433; databaseName= EduSys;encrypt=false";
+    // lấy danh sách người học
+    NguoiHoc nh = new NguoiHoc();
+    ArrayList<O_NguoiHoc> listLayDanhSachNH = nh.listNH;
+    //lấy danh sách chuyên đề
+    ChuyenDe cd = new ChuyenDe();
+    ArrayList<O_ChuyenDe> listLayCD = cd.listCD;
+//lấy thông tin đăng nhập
+    O_DangNhap tk = new O_DangNhap();
+    ArrayList<O_DangNhap> listDangNhap = tk.getAlllist();
+
+    public ThongKeDiemTungKhoaHoc() {
+        initComponents();
+        TieuDeNguoiHoc();
+        loadDataToArray();
+        DefaultComboBoxModel tbl = new DefaultComboBoxModel();
+        for (O_KhoaHoc nh : listKhoaHoc) {
+            tbl.addElement(nh.getGhiChu());
+
+        }
+
+        comboBoxSuggestion1.setModel(tbl);
+        comboBoxSuggestion1.setSelectedIndex(0);
+
+    }
+
+    public void loadDataToArray() {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            java.sql.Connection con = DriverManager.getConnection(url, userName, password);
+            java.sql.Statement st = con.createStatement();
+            String sql = "SELECT * FROM KhoaHoc";
+            ResultSet rs = st.executeQuery(sql);
+            listKhoaHoc.clear();
+            while (rs.next()) {
+                int MaKh = rs.getInt(1);
+
+                String MaCD = rs.getString(2);
+                float HocPhi = rs.getFloat(3);
+                int ThoiLuong = rs.getInt(4);
+                String NgayKG = rs.getString(5);
+
+                String GhiChu = rs.getString(6);
+                String maNV = rs.getString(7);
+                String NgayTao = rs.getString(8);
+
+                listKhoaHoc.add(new O_KhoaHoc(MaKh, MaCD, HocPhi, ThoiLuong, NgayKG, GhiChu, maNV, NgayTao));
+            }
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadDataToArray1() {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            java.sql.Connection con = DriverManager.getConnection(url, userName, password);
+
+            String sql = "{CALL Sp_BangDiem(?)}";
+
+            CallableStatement stmt = con.prepareCall(sql);
+
+            for (O_KhoaHoc kh : listKhoaHoc) {
+                if (kh.getGhiChu().trim().equalsIgnoreCase((String) comboBoxSuggestion1.getSelectedItem())) {
+                    stmt.setObject(1, kh.getMaKH());
+                    break;
+                }
+            }
+
+            listBangDiem.clear();
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+
+                String ChuyenDe = rs.getString(1);
+                String SoKH = rs.getString(2);
+                float soHV = rs.getFloat(3);
+
+                listBangDiem.add(new O_BangDiem(ChuyenDe, SoKH, soHV));
+
+            }
+
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void TieuDeNguoiHoc() {
+        tblmodel = new DefaultTableModel();
+        String[] tbl = new String[]{"Mã NH", "Họ và tên", "Điểm", "Trạng thái"};
+        tblmodel.setColumnIdentifiers(tbl);
+        tblUser.setModel(tblmodel);
+    }
+
+    public void DuyetHocVien() {
+        tblmodel.setRowCount(0);
+        for (O_BangDiem hv : listBangDiem) {
+            Object[] tbl = new Object[]{hv.getMaNH(), hv.getHoTen(), hv.getDiem(), hv.getTrangThai()};
+            tblmodel.addRow(tbl);
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblUser = new javax.swing.JTable();
+        comboBoxSuggestion1 = new com.tuandhpc05076.Swing.ComboBoxSuggestion();
+        jLabel1 = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(255, 255, 255));
+
+        tblUser.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(tblUser);
+
+        comboBoxSuggestion1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboBoxSuggestion1ActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel1.setText("Chọn khóa học");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(comboBoxSuggestion1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 904, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(11, 11, 11)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(comboBoxSuggestion1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void textField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textField4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_textField4ActionPerformed
+
+    private void comboBoxSuggestion1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxSuggestion1ActionPerformed
+        loadDataToArray1();
+        DuyetHocVien();        // TODO add your handling code here:
+    }//GEN-LAST:event_comboBoxSuggestion1ActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.tuandhpc05076.Swing.ComboBoxSuggestion comboBoxSuggestion1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tblUser;
+    // End of variables declaration//GEN-END:variables
+}
